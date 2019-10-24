@@ -37,14 +37,15 @@ public class ForestMapManager : MonoBehaviour {
     public Text SpawnText2;
     public GameObject spawner3;
     public Text SpawnText3;
+    public Text KeyText;
 
     public int TreeCount;
  
     private List<GameObject> spawnedNPCs;   // When you need to iterate over a number of agents.
     private List<GameObject> trees;
 
-    private int currentPhase = 0;           // This stores where in the "phases" the game is.
-    private int previousPhase = 0;          // The "phases" we were just in
+    private int currentPhase = -1;           // This stores where in the "phases" the game is.
+    private int previousPhase = -1;          // The "phases" we were just in
 
     //public int Phase => currentPhase;
 
@@ -75,56 +76,59 @@ public class ForestMapManager : MonoBehaviour {
     /// </summary>
     private void Update()
     {
-        int num;
-
         string inputstring = Input.inputString;
+        int num = -1;
+
         if (inputstring.Length > 0)
         {
             Debug.Log(inputstring);
 
-            if (inputstring[0] == 'R')
-            {
-                DestroyTrees();
-                SpawnTrees(TreeCount);
-            }
 
-            // Look for a number key click
-            if (inputstring.Length > 0)
+            if (Int32.TryParse(inputstring, out num))
             {
-                if (Int32.TryParse(inputstring, out num))
+                if (num != currentPhase)
                 {
-                    if (num != currentPhase)
-                    {
-                        previousPhase = currentPhase;
-                        currentPhase = num;
-                    }
+                    previousPhase = currentPhase;
+                    currentPhase = num;
                 }
             }
+
+            else if (inputstring[0] == 'K' || inputstring[0] == 'k')
+            {
+                if (KeyText.text.Length == 0)
+                {
+                    KeyText.text = "0: Dynamic Wander\n" +
+                        "1: Dynamic Flee\n" +
+                        "2: Dynamic Pursue\n" +
+                        "3: Dynamic Evade\n" +
+                        "4: Dynamic Align\n" +
+                        "5: Dynamic Face\n" +
+                        "6: Dynamic Wander\n" +
+                        "7: Toggle Wall Avoidance\n" +
+                        "8: Add/remove another hunter into the scene\n" +
+                        "9: Toggle Collision Predicition and Collision Detection\n" +
+                        "P: Chase Player\n" +
+                        "W: Chase Wolf\n" +
+                        "A: Path Following";
+                }
+                else
+                {
+                    KeyText.text = "";
+                }
+            }
+            else if (inputstring[0] == 'P' || inputstring[0] == 'p')
+            {
+                currentPhase = 10;
+            }
+            else if (inputstring[0] == 'W' || inputstring[0] == 'w')
+            {
+                currentPhase = 11;
+            }
+            else if (inputstring[0] == 'A' || inputstring[0] == 'a')
+            {
+                currentPhase = 12;
+            }
         }
-        // Check if a game event had caused a change of phase.
-        if (currentPhase == previousPhase)
-            return;
-
-
-        /************* FRAMEWORK VERSION
-       // If we get here, we've been given a new phase, from either source
-       switch (currentPhase) {
-           case 0:
-               EnterMapStateZero();
-               break;
-
-           case 1:
-               EnterMapStateOne();
-               break;
-
-           case 2:
-               EnterMapStateTwo();
-               break;
-
-           case 3:
-               break;
-       }
-       **************/
 
         switch (currentPhase)
             {
@@ -373,5 +377,10 @@ public class ForestMapManager : MonoBehaviour {
         Gizmos.DrawCube(spawner1.transform.position, spawner1.transform.localScale);
         Gizmos.DrawCube(spawner2.transform.position, spawner2.transform.localScale);
         Gizmos.DrawCube(spawner3.transform.position, spawner3.transform.localScale);
+    }
+
+    public List<GameObject> AllNPCs()
+    {
+        return spawnedNPCs;
     }
 }
