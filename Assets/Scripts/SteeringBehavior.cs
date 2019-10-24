@@ -76,6 +76,57 @@ public class SteeringBehavior : MonoBehaviour {
         wanderOrientation = agent.orientation;
     }
 
+    public void FixedUpdate()
+    {
+        //ensure it is time to start path following and you havent reached the end
+        if (current < Path.Length && startPathFollowing)
+        {
+            //get start and end points for section of path
+            startPos = agent.transform;
+            endPos = Path[current].transform;
+
+
+
+            //create struct to hold output
+            wanderSteering ret;
+
+            //check for wall avoidance otherwise delegate angular to face
+            wallAvoidanceSteering wallAvoidance = Wallavoidance();
+            if (System.Math.Abs(wallAvoidance.angular) < Mathf.Epsilon)
+            {
+                ret.angular = Align(endPos.position);
+            }
+            else
+            {
+                ret.angular = wallAvoidance.angular;
+            }
+
+            //check for collision detection otherwise keep linear normal
+            Vector3 foundCollision = CollisionDetectAndAvoid();
+            if (foundCollision == Vector3.zero)
+            {
+                ret.linear = maxAcceleration * new Vector3(Mathf.Sin(agent.orientation), 0, Mathf.Cos(agent.orientation));
+            }
+            else
+            {
+                ret.linear = foundCollision;
+            }
+
+            agent.GetComponent<NPCController>().update(ret.linear, ret.angular, Time.deltaTime);
+
+            //if you reached endPos advance to next point in path
+            if ((agent.position - endPos.position).magnitude <= targetRadiusL)
+            {
+                current += 1;
+            }
+        }
+        /*//othewise dont move player
+        else if (current >= Path.Length)
+        {
+            agent.GetComponent<NPCController>().UpdateMovement(Vector3.zero, 0f, Time.deltaTime);
+        }*/
+    }
+
     //this function returns the distance between agent and target
     private float GetDistance()
     {

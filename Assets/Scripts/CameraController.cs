@@ -9,11 +9,11 @@ public class CameraController : MonoBehaviour {
 
     void Start() {
         // Comment this line out if you want a fixed camera
-        offset = transform.position; 
+        //offset = transform.position; 
     }
 
     void LateUpdate() {
         // Comment this line out if you want a fixed camera
-        transform.position = player.transform.position + offset;
+        //transform.position = player.transform.position + offset;
     }
 }

@@ -89,7 +89,7 @@ public class NPCController : MonoBehaviour {
         }
     }
 
-    private void update(Vector3 steeringlin, float steeringang, float time) {
+    public void update(Vector3 steeringlin, float steeringang, float time) {
         // Update the orientation, velocity and rotation
         orientation += rotation * time;
         velocity += steeringlin * time;
