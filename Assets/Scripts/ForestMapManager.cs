@@ -16,7 +16,7 @@ using UnityEngine.UI;
 /// the number keys 0..9 will be used to dial in whichever phase the user wants to see.
 /// </summary>
 
-public class MapStateManager : MonoBehaviour {
+public class ForestMapManager : MonoBehaviour {
     // Set prefabs
     public GameObject PlayerPrefab;     // You, the player
     public GameObject HunterPrefab;     // Agent doing chasing
@@ -38,7 +38,7 @@ public class MapStateManager : MonoBehaviour {
     public GameObject spawner3;
     public Text SpawnText3;
 
-    public int TreeCount = 300;
+    public int TreeCount;
  
     private List<GameObject> spawnedNPCs;   // When you need to iterate over a number of agents.
     private List<GameObject> trees;
@@ -57,8 +57,6 @@ public class MapStateManager : MonoBehaviour {
 
     void Start() {
         narrator.text = "This is the place to mention major things going on during the demo, the \"narration.\"";
-
-        //TreeCount = 100;    // TreeCount isn't showing up in Inspector
 
         trees = new List<GameObject>();
         SpawnTrees(TreeCount);
@@ -87,7 +85,7 @@ public class MapStateManager : MonoBehaviour {
             if (inputstring[0] == 'R')
             {
                 DestroyTrees();
-                SpawnTrees(50);
+                SpawnTrees(TreeCount);
             }
 
             // Look for a number key click
@@ -279,8 +277,8 @@ public class MapStateManager : MonoBehaviour {
     /// <param name="numTrees">desired number of trees</param>
     private void SpawnTrees(int numTrees)
     {
-        float MAX_X = 20;  // Size of the map; ideally, these shouldn't be hard coded
-        float MAX_Z = 25;
+        float MAX_X = 25;  // Size of the map; ideally, these shouldn't be hard coded
+        float MAX_Z = 20;
         float less_X = MAX_X - 1;
         float less_Z = MAX_Z - 1;
 

@@ -56,8 +56,6 @@ public class NPCController : MonoBehaviour {
                 if (label) {
                     label.text = name.Replace("(Clone)", "") + "\nAlgorithm: Second algorithm";
                 }
-                linear = ai.Evade();
-                angular = ai.FaceAway();
 
                 // linear = ai.whatever();  -- replace with the desired calls
                 // angular = ai.whatever();
@@ -66,8 +64,6 @@ public class NPCController : MonoBehaviour {
                 if (label) {
                     label.text = name.Replace("(Clone)", "") + "\nAlgorithm: Third algorithm";
                 }
-                linear = ai.Arrive();
-                angular = ai.Face();
 
                 // linear = ai.whatever();  -- replace with the desired calls
                 // angular = ai.whatever();
@@ -76,7 +72,6 @@ public class NPCController : MonoBehaviour {
                 if (label) {
                     label.text = name.Replace("(Clone)", "") + "\nAlgorithm: Fourth algorithm";
                 }
-                angular = ai.Wander(out linear);
 
                 // linear = ai.whatever();  -- replace with the desired calls
                 // angular = ai.whatever();
@@ -85,8 +80,6 @@ public class NPCController : MonoBehaviour {
                 if (label) {
                     label.text = name.Replace("(Clone)", "") + "\nAlgorithm: Fifth algorithm";
                 }
-                linear = ai.PathFollow();
-                angular = ai.pathFace();
 
                 // linear = ai.whatever();  -- replace with the desired calls
                 // angular = ai.whatever();

@@ -1,0 +1,13 @@
+﻿This framework needed some additional work.
+
+First, there is no longer a MapStateManager. That module was recopied into two new ones: 
+FieldMapManager and ForestMapManager.
+
+Each of these is attached to its corresponding level.
+
+Also, for each of the levels, I removed the binding of its Map Manager file from MainCamera since 
+there was also a binding in that reserved GameObject PhaseManager. This was an unfortunate leftover
+from an earlier framework.
+
+I didn't attempt to update or remove those various messages from Little Red Riding Hood, etc. since 
+you'll be changing those anyway.
