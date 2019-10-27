@@ -26,6 +26,8 @@ public class NPCController : MonoBehaviour {
     public Text label;              // Used to displaying text nearby the agent as it moves around
     LineRenderer line;              // Used to draw circles and other things
 
+    public Camera cameraRef;
+
     private void Start() {
         ai = GetComponent<SteeringBehavior>();
         rb = GetComponent<Rigidbody>();
@@ -39,7 +41,26 @@ public class NPCController : MonoBehaviour {
     /// 
     /// </summary>
     void FixedUpdate() {
+        if(this.gameObject.tag == "Red")
+        {
+            Vector3 MousePos = Input.mousePosition;
+            MousePos.z = 30.0f;
+            Vector3 targetPos = cameraRef.ScreenToWorldPoint(MousePos);
+            linear = ai.Seek(targetPos);
+            angular = ai.Align(targetPos);
+            this.phase = 0;
+        }
+
         switch (phase) {
+            case 0:
+                if (label)
+                {
+                    // replace "First algorithm" with the name of the actual algorithm you're demoing
+                    // do this for each phase
+                    label.text = name.Replace("(Clone)", "") + "\nfollow the mouse pos";
+                }
+                break;
+
             case 1:
                 if (label) {
                     // replace "First algorithm" with the name of the actual algorithm you're demoing

@@ -151,6 +151,18 @@ public class SteeringBehavior : MonoBehaviour {
         return steering;
     }
 
+    public Vector3 Seek(Vector3 pos)
+    {
+        Vector3 steering = new Vector3();
+
+        steering = pos - agent.position;
+        if(steering.magnitude > maxAcceleration)
+        {
+            steering = steering.normalized * maxAcceleration;
+        }
+        return steering;
+    }
+
     public Vector3 DynamicArrive()
     {
         //get the distance between target and agent
