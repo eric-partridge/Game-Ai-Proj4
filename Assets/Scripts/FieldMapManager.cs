@@ -41,7 +41,7 @@ public class FieldMapManager : MonoBehaviour {
 
     public int TreeCount;
 
-    private List<GameObject> spawnedNPCs;   // When you need to iterate over a number of agents.
+    public List<GameObject> spawnedNPCs;   // When you need to iterate over a number of agents.
     private List<GameObject> trees;
 
     private int currentPhase = -1;           // This stores where in the "phases" the game is.
@@ -59,14 +59,10 @@ public class FieldMapManager : MonoBehaviour {
     {
         narrator.text = "This is the place to mention major things going on during the demo, the \"narration.\"";
 
-        trees = new List<GameObject>();
-        SpawnTrees(TreeCount);
+        spawnedNPCs = new List<GameObject>();
+        spawnedNPCs.Add(RedPrefab);
+        spawnedNPCs.Add(WolfPrefab);
 
-        //spawnedNPCs = new List<GameObject>();
-        //spawnedNPCs.Add(SpawnItem(spawner1, HunterPrefab, null, SpawnText1, 4));
-
-        //Invoke("SpawnWolf", 12);
-        //Invoke("Meeting1", 30);
     }
 
     /// <summary>
@@ -128,8 +124,18 @@ public class FieldMapManager : MonoBehaviour {
             {
                 print("Yep");
                 currentPhase = 12;
-                RedPrefab.GetComponent<SteeringBehavior>().startPathFollowing = true;
-                WolfPrefab.GetComponent<SteeringBehavior>().startPathFollowing = true;
+                spawnedNPCs[0].GetComponent<SteeringBehavior>().startPathFollowing = true;
+                spawnedNPCs[1].GetComponent<SteeringBehavior>().startPathFollowing = true;
+            }
+            else if(inputstring[0] == 'P' || inputstring[0] == 'p')
+            {
+                spawnedNPCs[0].GetComponent<SteeringBehavior>().collisionPrediction = true;
+                spawnedNPCs[1].GetComponent<SteeringBehavior>().collisionPrediction = true;
+            }
+            else if (inputstring[0] == 'C' || inputstring[0] == 'c')
+            {
+                spawnedNPCs[0].GetComponent<SteeringBehavior>().coneCheck = true;
+                spawnedNPCs[1].GetComponent<SteeringBehavior>().coneCheck = true;
             }
         }
 
