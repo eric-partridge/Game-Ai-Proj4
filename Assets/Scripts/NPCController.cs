@@ -27,6 +27,7 @@ public class NPCController : MonoBehaviour {
     LineRenderer line;              // Used to draw circles and other things
 
     public Camera cameraRef;
+    public float flockingMixRate;
 
     private void Start() {
         ai = GetComponent<SteeringBehavior>();
@@ -65,11 +66,16 @@ public class NPCController : MonoBehaviour {
                 if (label) {
                     // replace "First algorithm" with the name of the actual algorithm you're demoing
                     // do this for each phase
-                    label.text = name.Replace("(Clone)","") + "\nAlgorithm: First algorithm"; 
+                    label.text = name.Replace("(Clone)","") + "\nAlgorithm: Flocking Algorithm";
+                    
                 }
-
-                // linear = ai.whatever();  -- replace with the desired calls
-                // angular = ai.whatever();
+                linear = ai.Flocking().linear * flockingMixRate;
+                Debug.Log(linear);
+                angular = ai.Flocking().angular * flockingMixRate;
+                linear += ai.DynamicPursue();
+                angular += ai.face();
+                DrawCircle(this.position + linear, 0.75f);
+                
                 break;
             case 2:
                 if (label) {

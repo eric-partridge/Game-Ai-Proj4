@@ -43,14 +43,16 @@ public class FieldMapManager : MonoBehaviour {
     private List<GameObject> spawnedNPCs;   // When you need to iterate over a number of agents.
     private List<GameObject> trees;
 
-    private int currentPhase = 0;           // This stores where in the "phases" the game is.
-    private int previousPhase = 0;          // The "phases" we were just in
+    private int currentPhase = -1;           // This stores where in the "phases" the game is.
+    private int previousPhase = -1;          // The "phases" we were just in
 
     //public int Phase => currentPhase;
 
     LineRenderer line;                 
     public GameObject[] Path;
     public Text narrator;                   // 
+
+    public GameObject leaderRef;          //this is used to store the leader reference
 
     // Use this for initialization. Create any initial NPCs here and store them in the 
     // spawnedNPCs list. You can always add/remove NPCs later on.
@@ -103,7 +105,7 @@ public class FieldMapManager : MonoBehaviour {
             return;
 
 
-        /************* FRAMEWORK VERSION
+        //************* FRAMEWORK VERSION
        // If we get here, we've been given a new phase, from either source
        switch (currentPhase) {
            case 0:
@@ -121,18 +123,19 @@ public class FieldMapManager : MonoBehaviour {
            case 3:
                break;
        }
-       **************/
+       
       
     }
 
 
     private void EnterMapStateZero()
     {
-        narrator.text = "In Phase Zero, we're going to ...";
-
-        //currentPhase = 2; // or whatever. Won't necessarily advance the phase every time
-
-        //spawnedNPCs.Add(SpawnItem(spawner2, WolfPrefab, null, SpawnText2, 4));
+        narrator.text = "In Phase Zero, We will show the flocking algorithm";
+        for(int i = 0; i < 20; i++)
+        {
+            spawnedNPCs.Add(SpawnItem(spawner1, HunterPrefab, leaderRef.GetComponent<NPCController>(), SpawnText1, 1));
+        }
+        previousPhase = currentPhase;
     }
 
     private void EnterMapStateOne() {
@@ -295,5 +298,10 @@ public class FieldMapManager : MonoBehaviour {
         Gizmos.DrawCube(spawner1.transform.position, spawner1.transform.localScale);
         Gizmos.DrawCube(spawner2.transform.position, spawner2.transform.localScale);
         Gizmos.DrawCube(spawner3.transform.position, spawner3.transform.localScale);
+    }
+
+    public List<GameObject> AllNPCs()
+    {
+        return spawnedNPCs;
     }
 }
