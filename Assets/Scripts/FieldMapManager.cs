@@ -163,6 +163,14 @@ public class FieldMapManager : MonoBehaviour {
                     spawnedNPCs[i].GetComponent<SteeringBehavior>().coneCheck = true;
                 }
             }
+            else if(inputstring[0] == 'm' || inputstring[0] == 'M')
+            {
+                for(int i = 0; i < spawnedNPCs.Count; i++)
+                {
+                    NPCController nc = spawnedNPCs[i].GetComponent<NPCController>();
+                    nc.seekMousePos = !nc.seekMousePos;
+                }
+            }
         }
 
         switch (currentPhase)

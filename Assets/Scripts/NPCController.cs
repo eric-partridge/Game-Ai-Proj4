@@ -26,8 +26,9 @@ public class NPCController : MonoBehaviour {
     public Text label;              // Used to displaying text nearby the agent as it moves around
     LineRenderer line;              // Used to draw circles and other things
 
-    public Camera cameraRef;
     public float flockingMixRate;
+
+    public bool seekMousePos = false;
 
     private void Start() {
         ai = GetComponent<SteeringBehavior>();
@@ -42,11 +43,13 @@ public class NPCController : MonoBehaviour {
     /// 
     /// </summary>
     void FixedUpdate() {
-        if(this.gameObject.tag == "Red")
+        if(this.gameObject.tag == "Red" && seekMousePos == true)
         {
             Vector3 MousePos = Input.mousePosition;
             MousePos.z = 30.0f;
-            Vector3 targetPos = cameraRef.ScreenToWorldPoint(MousePos);
+            GameObject cameraRef = GameObject.FindGameObjectWithTag("MainCamera");
+            Camera cam = cameraRef.GetComponent<Camera>();
+            Vector3 targetPos = cam.ScreenToWorldPoint(MousePos);
             linear = ai.Seek(targetPos);
             angular = ai.Align(targetPos);
             this.phase = 0;
