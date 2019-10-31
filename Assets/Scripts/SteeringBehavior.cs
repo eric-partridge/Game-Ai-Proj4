@@ -49,6 +49,8 @@ public class SteeringBehavior : MonoBehaviour {
     public float avoidanceMultipler;
 
     public bool startPathFollowing = false;
+    public bool collisionPrediction = false;
+    public bool coneCheck = false;
     public bool lrrhWander = false;
 
     private Transform startPos;
@@ -56,9 +58,12 @@ public class SteeringBehavior : MonoBehaviour {
     float startTime;
     float journeyLength;
 
+    public List<GameObject> enemies;
     public float seperationMultiplier;
     public float alignMultiplier;
     public float cohesionMultiplier;
+
+    public float coneThreshold;
 
 
     //for collision prediction and detection
@@ -78,6 +83,111 @@ public class SteeringBehavior : MonoBehaviour {
     protected void Start() {
         agent = GetComponent<NPCController>();
         wanderOrientation = agent.orientation;
+    }
+
+    //this function returns the distance between agent and target
+    private float GetDistance()
+    }
+
+    public void FixedUpdate()
+    {
+        //ensure it is time to start path following and you havent reached the end
+        if (current < Path.Length && startPathFollowing)
+        {
+            //get start and end points for section of path
+            startPos = agent.transform;
+            endPos = Path[current].transform;
+
+
+
+            //create struct to hold output
+            wanderSteering ret;
+
+
+            if (coneCheck)
+            {
+                //perform cone check
+                wanderSteering coneCheckRet = ConeCheck();
+                if (coneCheckRet.linear != Vector3.zero && Mathf.Abs(coneCheckRet.angular) > Mathf.Epsilon)
+                {
+                    ret.linear = coneCheckRet.linear;
+                    ret.angular = coneCheckRet.angular;
+                }
+                else
+                {
+                    //calculate angular direction
+                    ret.angular = Align(endPos.position);
+                }
+            }
+            else
+            {
+                //calculate angular direction
+                ret.angular = Align(endPos.position);
+            }
+
+            //check for collision detection otherwise keep linear normal
+            if (collisionPrediction)
+            {
+                Vector3 foundCollision = CollisionDetectAndAvoid();
+                if (foundCollision == Vector3.zero)
+                {
+                    ret.linear = maxAcceleration * new Vector3(Mathf.Sin(agent.orientation), 0, Mathf.Cos(agent.orientation));
+                }
+                else
+                {
+                    ret.linear = foundCollision;
+                }
+            }
+            else
+            {
+                ret.linear = maxAcceleration * new Vector3(Mathf.Sin(agent.orientation), 0, Mathf.Cos(agent.orientation));
+            }
+
+
+            agent.GetComponent<NPCController>().update(ret.linear, ret.angular, Time.deltaTime);
+
+            //if you reached endPos advance to next point in path
+            if ((agent.position - endPos.position).magnitude <= targetRadiusL)
+            {
+                current += 1;
+            }
+        }
+        /*//othewise dont move player
+        else if (current >= Path.Length)
+        {
+            agent.GetComponent<NPCController>().UpdateMovement(Vector3.zero, 0f, Time.deltaTime);
+        }*/
+    }
+
+    public wanderSteering DynamicEvade()
+    {
+        wanderSteering result;
+        float distance = GetDistance();
+        float agentSpeed = agent.velocity.magnitude;
+        float prediction = maxPrediction;
+
+        //check could agent get target in maxPrediction time
+        if (agentSpeed > distance / maxPrediction)
+        {
+            prediction = distance / agentSpeed;
+        }
+
+        //get the future location
+        Vector3 futureLocation = target.position + (target.velocity * prediction);
+
+        //seek for future location
+        Vector3 futureAccleration = agent.position - futureLocation;
+
+        //clip to max acceleration
+        if (futureAccleration.magnitude > maxAcceleration)
+        {
+            futureAccleration = futureAccleration.normalized * maxAcceleration;
+        }
+        //agent.DrawCircle(futureAccleration + agent.position, 1.0f);
+
+        result.linear = futureAccleration;
+        result.angular = Align(futureAccleration + agent.position);
+        return result;
     }
 
     //this function returns the distance between agent and target
@@ -528,6 +638,7 @@ public class SteeringBehavior : MonoBehaviour {
     //This function is used for collision detection and avoidence among characters
     public Vector3 CollisionDetectAndAvoid()
     {
+        //print("Are we even checking?");
         List<GameObject> allNPCs;
         //error checking: if not find the script attached on Phase Manager
         if (GameObject.Find("PhaseManager") == null)
@@ -540,25 +651,36 @@ public class SteeringBehavior : MonoBehaviour {
         }
 
         //get a list for all NPCs
+        if(this.name[0] == 'R')
+        {
+            enemies = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().spawnedWolfs;
+        }
+        else
+        {
+            enemies = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().spawnedReds;
+        }
+
+
+        //get a list for all NPCs
         allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
 
         //if there is only one NPC
-        if (allNPCs.Count <= 1)
+        if (enemies.Count <= 1)
         {
             return new Vector3(0f, 0f, 0f);
         }
 
         //if there are multiple NPCs
         GameObject nearestNPC = null;
-        float shortestTime = 9999999f;
+        float shortestTime = 99999999f;
         float firstMinSeperation = 0;
         float firstDistance = 0;
         Vector3 firstRelativePos = new Vector3(0f, 0f, 0f);
         Vector3 firstRelativeVel = new Vector3(0f, 0f, 0f);
-        foreach (GameObject NPC in allNPCs)
+        foreach (GameObject NPC in enemies)
         {
             //we should not check self
-            if (NPC != this && NPC.tag == this.tag)
+            if (this.name != NPC.name)
             {
                 //calculate the time to collision
                 NPCController nc = NPC.GetComponent<NPCController>();
@@ -619,6 +741,44 @@ public class SteeringBehavior : MonoBehaviour {
         }
 
         return new Vector3(0f, 0f, 0f);
+    }
+
+    public wanderSteering ConeCheck()
+    {
+        //get a list for all NPCs
+        List<GameObject>  allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
+
+
+        wanderSteering emptyRet;
+        emptyRet.linear = Vector3.zero;
+        emptyRet.angular = 0f;
+
+        //if there is only one NPC
+        if (allNPCs.Count <= 1)
+        {
+            return emptyRet;
+        }
+        foreach (GameObject NPC in allNPCs)
+        {
+            if(this.name != NPC.name)
+            {
+                Vector3 orientationAsVec = new Vector3(Mathf.Sin(agent.orientation), 0, Mathf.Cos(agent.orientation));
+                Vector3 direction = NPC.GetComponent<NPCController>().position - agent.position;
+                if (Vector3.Dot(orientationAsVec, direction) > Mathf.Cos(Mathf.Deg2Rad * (coneThreshold/2)) && direction.magnitude < targetRadiusL*3)
+                {
+                    this.target = NPC.GetComponent<NPCController>();
+                    print(this.name + " is evading");
+                    return DynamicEvade();
+                }
+                else
+                {
+                    return emptyRet;
+                }
+            }
+        }
+
+        return emptyRet;
+
     }
 
     private Vector3 Cohesion()
