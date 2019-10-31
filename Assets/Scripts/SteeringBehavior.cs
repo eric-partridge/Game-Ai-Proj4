@@ -58,6 +58,8 @@ public class SteeringBehavior : MonoBehaviour {
     float startTime;
     float journeyLength;
 
+    public List<GameObject> enemies;
+
     public float coneThreshold;
 
 
@@ -584,10 +586,18 @@ public class SteeringBehavior : MonoBehaviour {
         }
 
         //get a list for all NPCs
-        allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
+        if(this.name[0] == 'R')
+        {
+            enemies = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().spawnedWolfs;
+        }
+        else
+        {
+            enemies = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().spawnedReds;
+        }
+
 
         //if there is only one NPC
-        if (allNPCs.Count <= 1)
+        if (enemies.Count <= 1)
         {
             return new Vector3(0f, 0f, 0f);
         }
@@ -599,7 +609,7 @@ public class SteeringBehavior : MonoBehaviour {
         float firstDistance = 0;
         Vector3 firstRelativePos = new Vector3(0f, 0f, 0f);
         Vector3 firstRelativeVel = new Vector3(0f, 0f, 0f);
-        foreach (GameObject NPC in allNPCs)
+        foreach (GameObject NPC in enemies)
         {
             //we should not check self
             if (this.name != NPC.name)

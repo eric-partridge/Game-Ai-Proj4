@@ -42,12 +42,17 @@ public class FieldMapManager : MonoBehaviour {
     public int TreeCount;
 
     public List<GameObject> spawnedNPCs;   // When you need to iterate over a number of agents.
+    public List<GameObject> spawnedWolfs;
+    public List<GameObject> spawnedReds;
     private List<GameObject> trees;
 
     private int currentPhase = -1;           // This stores where in the "phases" the game is.
     private int previousPhase = -1;          // The "phases" we were just in
 
     //public int Phase => currentPhase;
+
+    public GameObject[] PathRed;
+    public GameObject[] PathWolf;
 
     LineRenderer line;
     public Text narrator;                   // 
@@ -60,9 +65,22 @@ public class FieldMapManager : MonoBehaviour {
         narrator.text = "This is the place to mention major things going on during the demo, the \"narration.\"";
 
         spawnedNPCs = new List<GameObject>();
-        spawnedNPCs.Add(RedPrefab);
-        spawnedNPCs.Add(WolfPrefab);
+        //spawnedNPCs.Add(RedPrefab);
+        //spawnedNPCs.Add(WolfPrefab);
 
+        for(int i = 0; i < 6; i++)
+        {
+            spawnedNPCs.Add(SpawnItem(spawner1, RedPrefab, null, null, -1));
+            spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathRed;
+            spawnedReds.Add(spawnedNPCs[i]);
+        }
+
+        for (int i = 6; i < 12; i++)
+        {
+            spawnedNPCs.Add(SpawnItem(spawner3, WolfPrefab, null, null, -1));
+            spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathWolf;
+            spawnedWolfs.Add(spawnedNPCs[i]);
+        }
     }
 
     /// <summary>
@@ -112,30 +130,36 @@ public class FieldMapManager : MonoBehaviour {
                     KeyText.text = "";
                 }
             }
-            else if (inputstring[0] == 'P' || inputstring[0] == 'p')
+            /*else if (inputstring[0] == 'P' || inputstring[0] == 'p')
             {
                 currentPhase = 10;
-            }
+            }*/
             else if (inputstring[0] == 'W' || inputstring[0] == 'w')
             {
                 currentPhase = 11;
             }
             else if (inputstring[0] == 'A' || inputstring[0] == 'a')
             {
-                print("Yep");
-                currentPhase = 12;
-                spawnedNPCs[0].GetComponent<SteeringBehavior>().startPathFollowing = true;
-                spawnedNPCs[1].GetComponent<SteeringBehavior>().startPathFollowing = true;
+                for(int i = 0; i < 12; i++)
+                {
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().startPathFollowing = true;
+                }
+
             }
-            else if(inputstring[0] == 'P' || inputstring[0] == 'p')
+            else if (inputstring[0] == 'P' || inputstring[0] == 'p')
             {
-                spawnedNPCs[0].GetComponent<SteeringBehavior>().collisionPrediction = true;
-                spawnedNPCs[1].GetComponent<SteeringBehavior>().collisionPrediction = true;
+                for (int i = 0; i < 12; i++)
+                {
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().collisionPrediction = true;
+                }
+
             }
             else if (inputstring[0] == 'C' || inputstring[0] == 'c')
             {
-                spawnedNPCs[0].GetComponent<SteeringBehavior>().coneCheck = true;
-                spawnedNPCs[1].GetComponent<SteeringBehavior>().coneCheck = true;
+                for(int i = 0; i < 12; i++)
+                {
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().coneCheck = true;
+                }
             }
         }
 
