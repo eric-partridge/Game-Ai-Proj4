@@ -56,6 +56,10 @@ public class SteeringBehavior : MonoBehaviour {
     float startTime;
     float journeyLength;
 
+    public float seperationMultiplier;
+    public float alignMultiplier;
+    public float cohesionMultiplier;
+
 
     //for collision prediction and detection
     public struct wanderSteering
@@ -151,6 +155,18 @@ public class SteeringBehavior : MonoBehaviour {
         return steering;
     }
 
+    public Vector3 Seek(Vector3 pos)
+    {
+        Vector3 steering = new Vector3();
+
+        steering = pos - agent.position;
+        if(steering.magnitude > maxAcceleration)
+        {
+            steering = steering.normalized * maxAcceleration;
+        }
+        return steering;
+    }
+
     public Vector3 DynamicArrive()
     {
         //get the distance between target and agent
@@ -179,6 +195,47 @@ public class SteeringBehavior : MonoBehaviour {
 
         return new Vector3(0, 0, 0);
     }
+
+    public Vector3 DynamicPursue()
+    {
+        //firstly, get the values we need
+        float distance = GetDistance();
+        float agentSpeed = agent.velocity.magnitude;
+        float prediction = maxPrediction;
+
+        //check agent should persue or approach
+        if(distance >= slowRadiusL)
+        {
+            //check could agent get target in maxPrediction time
+            if(agentSpeed > distance / maxPrediction)
+            {
+                prediction = distance / agentSpeed;
+            }
+
+            //get the future location
+            Vector3 futureLocation = target.position + (target.velocity * prediction);
+            //seek for future location
+            Vector3 futureAccleration = futureLocation - agent.position;
+            
+        
+            //clip to max acceleration
+            if (futureAccleration.magnitude > maxAcceleration)
+            {
+                futureAccleration = futureAccleration.normalized * maxAcceleration;
+            }
+            //agent.DrawCircle(futureAccleration + agent.position , 1f);
+            //target.DrawCircle(futureLocation, 0.75f);
+            return futureAccleration;
+        }
+        else if(distance < slowRadiusL)
+        {
+            Vector3 apporachingAcceleration = DynamicArrive();
+            return apporachingAcceleration;
+        }
+
+        return new Vector3(0, 0, 0);
+    }
+
 
     public float Align(Vector3 targetVec)
     {
@@ -216,6 +273,11 @@ public class SteeringBehavior : MonoBehaviour {
         //print("Steering is: " + steering);
         //agent.DrawFaceCircle(1.0f, 5.0f);
         return steering;
+    }
+
+    public float face()
+    {
+        return Align(target.position);
     }
 
     //this fastAlign is used for wall avoidence since 
@@ -472,13 +534,13 @@ public class SteeringBehavior : MonoBehaviour {
         {
             return new Vector3(0f, 0f, 0f);
         }
-        else if (GameObject.Find("PhaseManager").GetComponent<ForestMapManager>() == null)
+        else if (GameObject.Find("PhaseManager").GetComponent<FieldMapManager>() == null)
         {
             return new Vector3(0f, 0f, 0f);
         }
 
         //get a list for all NPCs
-        allNPCs = GameObject.Find("PhaseManager").GetComponent<ForestMapManager>().AllNPCs();
+        allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
 
         //if there is only one NPC
         if (allNPCs.Count <= 1)
@@ -508,15 +570,17 @@ public class SteeringBehavior : MonoBehaviour {
                 //check collision
                 float distance = relativePos.magnitude;
                 float minSeperation = distance - relativeSpeed * shortestTime;
-                if (minSeperation > 2 * targetRadiusL)
-                {
-                    continue;
-                }
+                
 
                 //check if is already in collision
                 if (distance < 2 * targetRadiusL)
                 {
-                    return (relativePos.normalized * (-maxAcceleration) * 2.0f);
+                    return (relativePos.normalized * (-maxAcceleration) * 3.0f);
+                }
+
+                if (minSeperation > 2 * targetRadiusL)
+                {
+                    continue;
                 }
 
                 //check if the collisiontime is the shortest
@@ -555,6 +619,89 @@ public class SteeringBehavior : MonoBehaviour {
         }
 
         return new Vector3(0f, 0f, 0f);
+    }
+
+    private Vector3 Cohesion()
+    {
+        //error checking: if not find the script attached on Phase Manager
+        if (GameObject.Find("PhaseManager") == null)
+        {
+            return new Vector3(0f, 0f, 0f);
+        }
+        else if (GameObject.Find("PhaseManager").GetComponent<FieldMapManager>() == null)
+        {
+            return new Vector3(0f, 0f, 0f);
+        }
+        //get all npcs in the scene
+        List<GameObject> allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
+
+        Vector3 averagePos = new Vector3();
+        int NPCCount = 0;
+        foreach(GameObject NPC in allNPCs)
+        {
+            //make sure NPC only follows the NPC with same tag
+            if(NPC.tag == this.tag && NPC != this)
+            {
+                //calculate the total position
+                NPCController nc = NPC.GetComponent<NPCController>();
+                averagePos += nc.position;
+                NPCCount += 1;
+            }
+        }
+        //calculate the average position
+        averagePos /= NPCCount;
+        return Seek(averagePos);
+    }
+
+    private wanderSteering AlignCloseBy()
+    {
+        wanderSteering result = new wanderSteering();
+        result.angular = 0f;
+        result.linear = new Vector3(0f, 0f, 0f);
+        if (GameObject.Find("PhaseManager") == null)
+        {
+            return result;
+        }
+        else if (GameObject.Find("PhaseManager").GetComponent<FieldMapManager>() == null)
+        {
+            return result;
+        }
+        //get all npcs in the scene
+        List<GameObject> allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
+
+        Vector3 averageVelocity = new Vector3();
+        int NPCCount = 0;
+        foreach(GameObject NPC in allNPCs)
+        {
+            if(NPC.tag == this.tag && NPC != this)
+            {
+                NPCController nc = NPC.GetComponent<NPCController>();
+                //if close enough
+                if((nc.position - agent.position).magnitude < 5.0f)
+                {
+                    averageVelocity += nc.velocity;
+                    NPCCount += 1;
+                }
+            }
+        }
+        averageVelocity /= NPCCount;
+        result.angular =  Align(averageVelocity + agent.position);
+        result.linear = Seek(averageVelocity - agent.velocity + agent.position);
+
+        return result;
+    }
+
+    public wanderSteering Flocking()
+    {
+        wanderSteering result = new wanderSteering();
+        Vector3 seperation = CollisionDetectAndAvoid();
+        Vector3 cohesion = Cohesion();
+        wanderSteering align = AlignCloseBy();
+
+        result.angular = align.angular;
+        result.linear = result.linear + seperation * seperationMultiplier + cohesion * cohesionMultiplier + align.linear * alignMultiplier;
+
+        return result;
     }
 
 }

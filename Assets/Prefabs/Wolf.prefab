@@ -132,6 +132,8 @@ MonoBehaviour:
   maxSpeed: 5
   phase: 0
   label: {fileID: 0}
+  cameraRef: {fileID: 0}
+  flockingMixRate: 1
 --- !u!114 &114403713985068348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,6 +154,7 @@ MonoBehaviour:
   targetRadiusL: 2
   slowRadiusL: 6
   timeToTarget: 0.1
+  targetSpeedL: 0
   maxRotation: 4
   maxAngularAcceleration: 4
   targetRadiusA: 0.1
@@ -159,8 +162,16 @@ MonoBehaviour:
   wanderOffset: 5
   wanderRadius: 2
   wanderRate: 1
+  wanderTarget: {fileID: 0}
   Path: []
   current: 0
+  raycastDistance: 0
+  avoidanceMultipler: 0
+  startPathFollowing: 0
+  lrrhWander: 0
+  seperationMultiplier: 0.6
+  alignMultiplier: 0.2
+  cohesionMultiplier: 0.2
 --- !u!120 &120447287367831728
 LineRenderer:
   m_ObjectHideFlags: 0

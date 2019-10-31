@@ -254,6 +254,7 @@ MonoBehaviour:
   TreeCount: 0
   Path: []
   narrator: {fileID: 746086918}
+  leaderRef: {fileID: 160856703}
 --- !u!4 &57836076
 Transform:
   m_ObjectHideFlags: 0
@@ -473,19 +474,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 656861320}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &160856704
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 160856703}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60c36cfcd6da9ef4aa69fa473b1853e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 0.2
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
@@ -760,7 +748,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 73
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -900,7 +888,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4563332300184562, guid: a4c4224164306c24e886b5cb60a7d09c, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.32375225
       objectReference: {fileID: 0}
     - target: {fileID: 4563332300184562, guid: a4c4224164306c24e886b5cb60a7d09c, type: 3}
       propertyPath: m_LocalRotation.z
@@ -908,7 +896,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4563332300184562, guid: a4c4224164306c24e886b5cb60a7d09c, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.94614196
       objectReference: {fileID: 0}
     - target: {fileID: 4563332300184562, guid: a4c4224164306c24e886b5cb60a7d09c, type: 3}
       propertyPath: m_RootOrder
@@ -920,12 +908,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4563332300184562, guid: a4c4224164306c24e886b5cb60a7d09c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 37.78
       objectReference: {fileID: 0}
     - target: {fileID: 4563332300184562, guid: a4c4224164306c24e886b5cb60a7d09c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114546075071124460, guid: a4c4224164306c24e886b5cb60a7d09c,
+        type: 3}
+      propertyPath: cameraRef
+      value: 
+      objectReference: {fileID: 534669904}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a4c4224164306c24e886b5cb60a7d09c, type: 3}
 --- !u!1 &746086916
