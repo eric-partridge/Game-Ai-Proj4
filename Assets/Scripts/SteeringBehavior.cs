@@ -160,8 +160,8 @@ public class SteeringBehavior : MonoBehaviour {
                 wanderSteering flocking = Flocking();
                 if(flocking.linear == Vector3.zero && flocking.angular < Mathf.Epsilon)
                 {
-                    ret.angular += 0.4f * flocking.angular;
-                    ret.linear += 0.4f * flocking.linear;
+                    ret.angular += 0.6f * flocking.angular;
+                    ret.linear += 0.6f * flocking.linear;
                 }
             }
 
