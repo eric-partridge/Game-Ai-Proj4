@@ -146,7 +146,6 @@ public class FieldMapManager : MonoBehaviour {
             }
             else if (inputstring[0] == 'A' || inputstring[0] == 'a')
             {
-                currentPhase = 12;
                 for(int i = 0; i < 12; i++)
                 {
                     spawnedNPCs[i].GetComponent<SteeringBehavior>().startPathFollowing = true;
@@ -168,6 +167,14 @@ public class FieldMapManager : MonoBehaviour {
                 for(int i = 0; i < 12; i++)
                 {
                     spawnedNPCs[i].GetComponent<SteeringBehavior>().coneCheck = true;
+                }
+            }
+            else if(inputstring[0] == 'm' || inputstring[0] == 'M')
+            {
+                for(int i = 0; i < spawnedNPCs.Count; i++)
+                {
+                    NPCController nc = spawnedNPCs[i].GetComponent<NPCController>();
+                    nc.seekMousePos = !nc.seekMousePos;
                 }
             }
         }
