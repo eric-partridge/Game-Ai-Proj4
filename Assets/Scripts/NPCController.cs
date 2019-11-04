@@ -84,11 +84,12 @@ public class NPCController : MonoBehaviour {
                 break;
             case 2:
                 if (label) {
-                    label.text = name.Replace("(Clone)", "") + "\nAlgorithm: Second algorithm";
+                    label.text = name.Replace("(Clone)", "") + "\nAlgorithm: Part 3 algorithm";
                 }
-
-                // linear = ai.whatever();  -- replace with the desired calls
-                // angular = ai.whatever();
+                ai.partThree = true;
+                ai.startPathFollowing = true;
+                ai.partTwo = false;
+                
                 break;
             case 3:
                 if (label) {
