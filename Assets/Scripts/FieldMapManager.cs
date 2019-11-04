@@ -73,21 +73,6 @@ public class FieldMapManager : MonoBehaviour {
         //spawnedNPCs.Add(WolfPrefab);
 
         /* Code for part 2
-        for(int i = 0; i < 6; i++)
-        {
-            spawnedNPCs.Add(SpawnItem(spawner1, RedPrefab, null, null, -1));
-            spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathRed;
-            spawnedNPCs[i].GetComponent<NPCController>().cameraRef = mainCam;
-            spawnedReds.Add(spawnedNPCs[i]);
-        }
-
-        for (int i = 6; i < 12; i++)
-        {
-            spawnedNPCs.Add(SpawnItem(spawner3, WolfPrefab, null, null, -1));
-            spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathWolf;
-            spawnedNPCs[i].GetComponent<NPCController>().cameraRef = mainCam;
-            spawnedWolfs.Add(spawnedNPCs[i]);
-        }
         */
         //modify this text and the same one in mapPhase 0 to change the discription
         narrator.text = "Press 1 for flocking\nPress 2 to Reset\n";
@@ -144,9 +129,23 @@ public class FieldMapManager : MonoBehaviour {
             }
             else if (inputstring[0] == 'A' || inputstring[0] == 'a')
             {
-                for(int i = 0; i < 12; i++)
+                for (int i = 0; i < 6; i++)
+                {
+                    spawnedNPCs.Add(SpawnItem(spawner1, RedPrefab, null, null, -1));
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathRed;
+                    spawnedReds.Add(spawnedNPCs[i]);
+                }
+
+                for (int i = 6; i < 12; i++)
+                {
+                    spawnedNPCs.Add(SpawnItem(spawner3, WolfPrefab, null, null, -1));
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathWolf;
+                    spawnedWolfs.Add(spawnedNPCs[i]);
+                }
+                for (int i = 0; i < 12; i++)
                 {
                     spawnedNPCs[i].GetComponent<SteeringBehavior>().startPathFollowing = true;
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().partTwo = true;
                 }
 
             }
