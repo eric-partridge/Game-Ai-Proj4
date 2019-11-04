@@ -57,16 +57,8 @@ public class ForestMapManager : MonoBehaviour {
     // spawnedNPCs list. You can always add/remove NPCs later on.
 
     void Start() {
-        narrator.text = "This is the place to mention major things going on during the demo, the \"narration.\"";
+        narrator.text = "Press K for Instrcutions\n";
 
-        trees = new List<GameObject>();
-        SpawnTrees(TreeCount);
-
-        spawnedNPCs = new List<GameObject>();
-        spawnedNPCs.Add(SpawnItem(spawner1, HunterPrefab, null, SpawnText1, 4));
-        
-        Invoke("SpawnWolf", 12);
-        Invoke("Meeting1", 30);
     }
 
     /// <summary>
@@ -97,19 +89,7 @@ public class ForestMapManager : MonoBehaviour {
             {
                 if (KeyText.text.Length == 0)
                 {
-                    KeyText.text = "0: Dynamic Wander\n" +
-                        "1: Dynamic Flee\n" +
-                        "2: Dynamic Pursue\n" +
-                        "3: Dynamic Evade\n" +
-                        "4: Dynamic Align\n" +
-                        "5: Dynamic Face\n" +
-                        "6: Dynamic Wander\n" +
-                        "7: Toggle Wall Avoidance\n" +
-                        "8: Add/remove another hunter into the scene\n" +
-                        "9: Toggle Collision Predicition and Collision Detection\n" +
-                        "P: Chase Player\n" +
-                        "W: Chase Wolf\n" +
-                        "A: Path Following";
+                    KeyText.text = "0: Dynamic Wander\n";
                 }
                 else
                 {
@@ -122,11 +102,23 @@ public class ForestMapManager : MonoBehaviour {
             }
             else if (inputstring[0] == 'W' || inputstring[0] == 'w')
             {
-                currentPhase = 11;
+                for (int i = 0; i < spawnedNPCs.Count; i++)
+                {
+                    NPCController nc = spawnedNPCs[i].GetComponent<NPCController>();
+                    nc.enableWallAvoidance = !nc.enableWallAvoidance;
+                }
             }
             else if (inputstring[0] == 'A' || inputstring[0] == 'a')
             {
                 currentPhase = 12;
+            }
+            else if (inputstring[0] == 'm' || inputstring[0] == 'M')
+            {
+                for (int i = 0; i < spawnedNPCs.Count; i++)
+                {
+                    NPCController nc = spawnedNPCs[i].GetComponent<NPCController>();
+                    nc.seekMousePos = !nc.seekMousePos;
+                }
             }
         }
 

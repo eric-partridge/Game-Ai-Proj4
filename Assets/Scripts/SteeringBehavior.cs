@@ -46,7 +46,6 @@ public class SteeringBehavior : MonoBehaviour {
 
     // For wall avoidance
     public float raycastDistance;
-    public float avoidanceMultipler;
 
     public bool startPathFollowing = false;
     public bool collisionPrediction = false;
@@ -526,14 +525,15 @@ public class SteeringBehavior : MonoBehaviour {
     {
         //the variables to store raycast result
         RaycastHit hit;
-        RaycastHit hit2;
+        RaycastHit hitLeft;
+        RaycastHit hitRight;
         wallAvoidanceSteering result;
         Vector3 faceVec = Quaternion.Euler(0.0f, agent.rotation, 0.0f) * agent.transform.forward;
         Debug.DrawRay(agent.position, faceVec * raycastDistance, Color.red, Time.deltaTime);
 
 
         //do the sphereCast which will cast a sphere instead of a line
-        if (Physics.SphereCast(agent.position, 0.85f, faceVec, out hit, raycastDistance))
+        if (Physics.SphereCast(agent.position, 0.75f, faceVec, out hit, raycastDistance))
         {
             //print(hit.collider.gameObject.name);
 
@@ -567,25 +567,63 @@ public class SteeringBehavior : MonoBehaviour {
                 //then we do the turing, we will check 45, 90, ... , 180
                 //if all these failed, we will use targetPos
                 float ang = 0f;
-                while (ang < 360f)
+                while (ang < 180f)
                 {
-                    //check collision using simple ray cast
-                    bool cannotTurn = Physics.Raycast(agent.position, Quaternion.Euler(0.0f, agent.rotation + ang, 0.0f) * agent.transform.forward, out hit2, raycastDistance);
+                    //check collision using sphere ray cast to left and right
+                    bool cannotTurnLeft = Physics.SphereCast(agent.position,0.75f ,Quaternion.Euler(0.0f, agent.rotation + ang, 0.0f) * agent.transform.forward, out hitLeft, raycastDistance);
+                    bool cannotTurnRight = Physics.SphereCast(agent.position,0.75f ,Quaternion.Euler(0.0f, agent.rotation - ang, 0.0f) * agent.transform.forward, out hitRight, raycastDistance);
                     //check the tag of collision object, the only situation
                     //cannot turn is find a obstacle tagged gameobject
-                    if (cannotTurn == true)
+                    if (cannotTurnLeft == true || cannotTurnRight == true)
                     {
-                        if (hit2.collider.gameObject.tag != "Obstacle")
+                        if (hitLeft.collider.gameObject.tag != "Obstacle" && cannotTurnLeft == true)
+                        {
+                            cannotTurnLeft = false;
+                        }
+                        if (hitRight.collider.gameObject.tag != "Obstacle" && cannotTurnRight == true)
+                        {
+                            cannotTurnRight = false;
+                        }
+                    }
+
+                    bool cannotTurn = true;
+                    float finalAng = 0;
+                    
+                    //determing which direction we should seek and face
+                    if(cannotTurnLeft == false && cannotTurnRight == false)
+                    {
+                        float rnd = Random.Range(-1.0f, 1.0f);
+                        if(rnd < 0)
                         {
                             cannotTurn = false;
+                            finalAng = ang;
                         }
+                        else
+                        {
+                            cannotTurn = false;
+                            finalAng = -ang;
+                        }
+                    }
+                    else if(cannotTurnLeft == false)
+                    {
+                        cannotTurn = false;
+                        finalAng = ang;
+                    }
+                    else if(cannotTurnRight = false)
+                    {
+                        cannotTurn = false;
+                        finalAng = -ang;
+                    }
+                    else
+                    {
+                        cannotTurn = true;
                     }
 
                     //if there is no obstacle, just turn the gameObject
                     if (cannotTurn == false)
                     {
                         //turn 45 degrees every time in clockwise
-                        targetPos = agent.position + Quaternion.Euler(0.0f, agent.rotation + ang, 0.0f) * agent.transform.forward * raycastDistance;
+                        targetPos = agent.position + Quaternion.Euler(0.0f, agent.rotation + finalAng, 0.0f) * agent.transform.forward * raycastDistance;
 
                         //if the target is too close to the obstacle, turn faster
                         if (hit.distance < 0.45f)
@@ -599,7 +637,7 @@ public class SteeringBehavior : MonoBehaviour {
                         result.needAvoidance = true;
                         return result;
                     }
-                    ang += 45f;
+                    ang += 5f;
 
                     //make sure turn back is not selected since
                     //hit.normal could be looking back

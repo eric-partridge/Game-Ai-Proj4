@@ -8,6 +8,7 @@ TagManager:
   - Hunter
   - Red
   - Spawner
+  - Obstacle
   layers:
   - Default
   - TransparentFX
