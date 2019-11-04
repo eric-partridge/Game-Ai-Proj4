@@ -6,6 +6,12 @@ Flocking:
 	
 	The forth parameter is for mix rate between Flocking and Persue
 	the formular is Flocking*FRate + Persue.
+
+Path Following:
+	To Start path following, press 2. Initially the cone check or predictive collision 
+	detection is off. For the Cone Check, Press 'C' to enable it. For the Collision
+	Preidiction, Press 'P' to enable it. The checks are enabled once two characters
+	are inside the Target Radius L. For Cone Check the cone angle is set to 20 degrees
 	
 Raycasting:
 	Modified the old Raycasting function, This time Raycasting will check

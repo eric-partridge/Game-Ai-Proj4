@@ -47,6 +47,7 @@ public class FieldMapManager : MonoBehaviour {
     public List<GameObject> spawnedWolfs;
     public List<GameObject> spawnedReds;
     private List<GameObject> trees;
+    private bool fieldMapManagerPartTwo = false;
 
     private int currentPhase = -1;           // This stores where in the "phases" the game is.
     private int previousPhase = -1;          // The "phases" we were just in
@@ -71,11 +72,8 @@ public class FieldMapManager : MonoBehaviour {
         spawnedNPCs = new List<GameObject>();
         //spawnedNPCs.Add(RedPrefab);
         //spawnedNPCs.Add(WolfPrefab);
-
-        /* Code for part 2
-        */
         //modify this text and the same one in mapPhase 0 to change the discription
-        narrator.text = "Press 1 for flocking\nPress 2 to Reset\n";
+        narrator.text = "Press 1 for flocking\nPress 2 to Path Following.\nPress S to Reset";
     }
 
     /// <summary>
@@ -109,9 +107,9 @@ public class FieldMapManager : MonoBehaviour {
                     KeyText.text = "m: follow mouse\n" +
                         "c: Cone check\n" +
                         "p: Part2 avoidance\n"+
-                        "a: Start PathFollowing" +
-                        "1: show Part 1 flocking algo" +
-                        "2: Clear all";      
+                        "1: show Part 1 flocking algo\n" +
+                        "2: Show Part 2 Path Following\n" +
+                        "S: Clear all";      
                         
                 }
                 else
@@ -123,31 +121,13 @@ public class FieldMapManager : MonoBehaviour {
             {
                 currentPhase = 10;
             }*/
+            else if(inputstring[0] == 'S' || inputstring[0] == 's')
+            {
+                currentPhase = 3;
+            }
             else if (inputstring[0] == 'W' || inputstring[0] == 'w')
             {
                 currentPhase = 11;
-            }
-            else if (inputstring[0] == 'A' || inputstring[0] == 'a')
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    spawnedNPCs.Add(SpawnItem(spawner1, RedPrefab, null, null, -1));
-                    spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathRed;
-                    spawnedReds.Add(spawnedNPCs[i]);
-                }
-
-                for (int i = 6; i < 12; i++)
-                {
-                    spawnedNPCs.Add(SpawnItem(spawner3, WolfPrefab, null, null, -1));
-                    spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathWolf;
-                    spawnedWolfs.Add(spawnedNPCs[i]);
-                }
-                for (int i = 0; i < 12; i++)
-                {
-                    spawnedNPCs[i].GetComponent<SteeringBehavior>().startPathFollowing = true;
-                    spawnedNPCs[i].GetComponent<SteeringBehavior>().partTwo = true;
-                }
-
             }
             else if (inputstring[0] == 'P' || inputstring[0] == 'p')
             {
@@ -180,7 +160,7 @@ public class FieldMapManager : MonoBehaviour {
         {
             case 0:
                 //idle
-                narrator.text = "Press 1 for flocking\nPress 2 to Reset.\n";
+                narrator.text = "Press 1 for flocking\nPress 2 to Path Following.\nPress S to Reset";
                 break;
             case 1:
                 
@@ -198,6 +178,28 @@ public class FieldMapManager : MonoBehaviour {
                 currentPhase = 0;
                 break;
             case 2:
+                for (int i = 0; i < 6; i++)
+                {
+                    spawnedNPCs.Add(SpawnItem(spawner1, RedPrefab, null, null, -1));
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathRed;
+                    spawnedReds.Add(spawnedNPCs[i]);
+                }
+
+                for (int i = 6; i < 12; i++)
+                {
+                    spawnedNPCs.Add(SpawnItem(spawner3, WolfPrefab, null, null, -1));
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathWolf;
+                    spawnedWolfs.Add(spawnedNPCs[i]);
+                }
+                for (int i = 0; i < 12; i++)
+                {
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().startPathFollowing = true;
+                    spawnedNPCs[i].GetComponent<SteeringBehavior>().partTwo = true;
+                }
+                previousPhase = currentPhase;
+                currentPhase = 0;
+                break;
+            case 3:
                 while(spawnedNPCs.Count != 0)
                 {
                     GameObject tempRef = spawnedNPCs[0];
