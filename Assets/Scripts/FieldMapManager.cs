@@ -27,6 +27,8 @@ public class FieldMapManager : MonoBehaviour {
 
     public NPCController house;         // for future use
 
+    public Camera mainCam;
+
     // Set up to use spawn points. Can add more here, and also add them to the 
     // Unity project. This won't be a good idea later on when you want to spawn
     // a lot of agents dynamically, as with Flocking and Formation movement.
@@ -74,6 +76,7 @@ public class FieldMapManager : MonoBehaviour {
         {
             spawnedNPCs.Add(SpawnItem(spawner1, RedPrefab, null, null, -1));
             spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathRed;
+            spawnedNPCs[i].GetComponent<NPCController>().cameraRef = mainCam;
             spawnedReds.Add(spawnedNPCs[i]);
         }
 
@@ -81,6 +84,7 @@ public class FieldMapManager : MonoBehaviour {
         {
             spawnedNPCs.Add(SpawnItem(spawner3, WolfPrefab, null, null, -1));
             spawnedNPCs[i].GetComponent<SteeringBehavior>().Path = PathWolf;
+            spawnedNPCs[i].GetComponent<NPCController>().cameraRef = mainCam;
             spawnedWolfs.Add(spawnedNPCs[i]);
         }
     }
@@ -142,6 +146,7 @@ public class FieldMapManager : MonoBehaviour {
             }
             else if (inputstring[0] == 'A' || inputstring[0] == 'a')
             {
+                currentPhase = 12;
                 for(int i = 0; i < 12; i++)
                 {
                     spawnedNPCs[i].GetComponent<SteeringBehavior>().startPathFollowing = true;
@@ -150,6 +155,7 @@ public class FieldMapManager : MonoBehaviour {
             }
             else if (inputstring[0] == 'P' || inputstring[0] == 'p')
             {
+                currentPhase = 13;
                 for (int i = 0; i < 12; i++)
                 {
                     spawnedNPCs[i].GetComponent<SteeringBehavior>().collisionPrediction = true;
@@ -158,6 +164,7 @@ public class FieldMapManager : MonoBehaviour {
             }
             else if (inputstring[0] == 'C' || inputstring[0] == 'c')
             {
+                currentPhase = 14;
                 for(int i = 0; i < 12; i++)
                 {
                     spawnedNPCs[i].GetComponent<SteeringBehavior>().coneCheck = true;

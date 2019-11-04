@@ -85,10 +85,6 @@ public class SteeringBehavior : MonoBehaviour {
         wanderOrientation = agent.orientation;
     }
 
-    //this function returns the distance between agent and target
-    private float GetDistance()
-    }
-
     public void FixedUpdate()
     {
         //ensure it is time to start path following and you havent reached the end

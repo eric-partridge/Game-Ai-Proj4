@@ -49,7 +49,7 @@ public class NPCController : MonoBehaviour {
             Vector3 targetPos = cameraRef.ScreenToWorldPoint(MousePos);
             linear = ai.Seek(targetPos);
             angular = ai.Align(targetPos);
-            this.phase = 0;
+            this.phase = -1;
         }
 
         switch (phase) {
