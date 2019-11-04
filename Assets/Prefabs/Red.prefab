@@ -130,11 +130,13 @@ MonoBehaviour:
   velocity: {x: 0, y: 0, z: 0}
   orientation: 0
   rotation: 0
-  maxSpeed: 6
+  maxSpeed: 3
   phase: 0
   label: {fileID: 0}
-  cameraRef: {fileID: 0}
   flockingMixRate: 1
+  wallAvoidanceMixRate: 1
+  seekMousePos: 0
+  enableWallAvoidance: 0
 --- !u!114 &114514449303210042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,20 +167,20 @@ MonoBehaviour:
   wanderRate: 1
   wanderTarget: {fileID: 0}
   Path:
-  - {fileID: 1521808320783650, guid: 542da097d7789844fbc8cd10769eb879, type: 3}
-  - {fileID: 1300367382764716, guid: 542da097d7789844fbc8cd10769eb879, type: 3}
-  - {fileID: 1220598293937184, guid: 542da097d7789844fbc8cd10769eb879, type: 3}
-  - {fileID: 1955218538869046, guid: 542da097d7789844fbc8cd10769eb879, type: 3}
-  - {fileID: 1358002575393872, guid: 542da097d7789844fbc8cd10769eb879, type: 3}
-  - {fileID: 1132808542824362, guid: 542da097d7789844fbc8cd10769eb879, type: 3}
+  - {fileID: 0}
   current: 0
-  raycastDistance: 0
-  avoidanceMultipler: 0
+  raycastDistance: 4
   startPathFollowing: 0
+  collisionPrediction: 0
+  coneCheck: 0
   lrrhWander: 0
+  partTwo: 0
+  partThree: 0
+  enemies: []
   seperationMultiplier: 0.6
   alignMultiplier: 0.2
   cohesionMultiplier: 0.2
+  coneThreshold: 0
 --- !u!120 &120923665468088886
 LineRenderer:
   m_ObjectHideFlags: 0

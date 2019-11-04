@@ -46,12 +46,13 @@ public class SteeringBehavior : MonoBehaviour {
 
     // For wall avoidance
     public float raycastDistance;
-    public float avoidanceMultipler;
 
     public bool startPathFollowing = false;
     public bool collisionPrediction = false;
     public bool coneCheck = false;
     public bool lrrhWander = false;
+    public bool partTwo = false;
+    public bool partThree = false;
 
     private Transform startPos;
     private Transform endPos;
@@ -98,45 +99,68 @@ public class SteeringBehavior : MonoBehaviour {
 
             //create struct to hold output
             wanderSteering ret;
+            ret.linear = Vector3.zero;
+            ret.angular = 0f;
 
-
-            if (coneCheck)
+            if (partTwo == true)
             {
-                //perform cone check
-                wanderSteering coneCheckRet = ConeCheck();
-                if (coneCheckRet.linear != Vector3.zero && Mathf.Abs(coneCheckRet.angular) > Mathf.Epsilon)
+                if (coneCheck)
                 {
-                    ret.linear = coneCheckRet.linear;
-                    ret.angular = coneCheckRet.angular;
+                    //perform cone check
+                    wanderSteering coneCheckRet = ConeCheck();
+                    if (coneCheckRet.linear != Vector3.zero && Mathf.Abs(coneCheckRet.angular) > Mathf.Epsilon)
+                    {
+                        ret.linear = coneCheckRet.linear;
+                        ret.angular = coneCheckRet.angular;
+                    }
+                    else
+                    {
+                        //calculate angular direction
+                        ret.angular = Align(endPos.position);
+                    }
                 }
                 else
                 {
                     //calculate angular direction
                     ret.angular = Align(endPos.position);
                 }
-            }
-            else
-            {
-                //calculate angular direction
-                ret.angular = Align(endPos.position);
-            }
 
-            //check for collision detection otherwise keep linear normal
-            if (collisionPrediction)
-            {
-                Vector3 foundCollision = CollisionDetectAndAvoid();
-                if (foundCollision == Vector3.zero)
+                //check for collision detection otherwise keep linear normal
+                if (collisionPrediction)
                 {
-                    ret.linear = maxAcceleration * new Vector3(Mathf.Sin(agent.orientation), 0, Mathf.Cos(agent.orientation));
+                    Vector3 foundCollision = CollisionDetectAndAvoid();
+                    if (foundCollision == Vector3.zero)
+                    {
+                        ret.linear = maxAcceleration * new Vector3(Mathf.Sin(agent.orientation), 0, Mathf.Cos(agent.orientation));
+                    }
+                    else
+                    {
+                        ret.linear = foundCollision;
+                    }
                 }
                 else
                 {
-                    ret.linear = foundCollision;
+                    ret.linear = maxAcceleration * new Vector3(Mathf.Sin(agent.orientation), 0, Mathf.Cos(agent.orientation));
                 }
             }
-            else
+
+            if(partThree == true)
             {
-                ret.linear = maxAcceleration * new Vector3(Mathf.Sin(agent.orientation), 0, Mathf.Cos(agent.orientation));
+                ret.angular = Align(endPos.position);
+                ret.linear = Seek(endPos.position);
+                wallAvoidanceSteering wa = Wallavoidance();
+                if(wa.needAvoidance == true)
+                {
+                    ret.angular += 0.7f * wa.angular;
+                    ret.linear += 0.7f * wa.linear;
+                }
+
+                wanderSteering flocking = Flocking();
+                if(flocking.linear == Vector3.zero && flocking.angular < Mathf.Epsilon)
+                {
+                    ret.angular += 0.6f * flocking.angular;
+                    ret.linear += 0.6f * flocking.linear;
+                }
             }
 
 
@@ -145,6 +169,7 @@ public class SteeringBehavior : MonoBehaviour {
             //if you reached endPos advance to next point in path
             if ((agent.position - endPos.position).magnitude <= targetRadiusL)
             {
+                Debug.Log("current is "+current);
                 current += 1;
             }
         }
@@ -154,6 +179,7 @@ public class SteeringBehavior : MonoBehaviour {
             agent.GetComponent<NPCController>().UpdateMovement(Vector3.zero, 0f, Time.deltaTime);
         }*/
     }
+
 
     public wanderSteering DynamicEvade()
     {
@@ -524,14 +550,15 @@ public class SteeringBehavior : MonoBehaviour {
     {
         //the variables to store raycast result
         RaycastHit hit;
-        RaycastHit hit2;
+        RaycastHit hitLeft;
+        RaycastHit hitRight;
         wallAvoidanceSteering result;
         Vector3 faceVec = Quaternion.Euler(0.0f, agent.rotation, 0.0f) * agent.transform.forward;
         Debug.DrawRay(agent.position, faceVec * raycastDistance, Color.red, Time.deltaTime);
 
 
         //do the sphereCast which will cast a sphere instead of a line
-        if (Physics.SphereCast(agent.position, 0.85f, faceVec, out hit, raycastDistance))
+        if (Physics.SphereCast(agent.position, 0.35f, faceVec, out hit, raycastDistance))
         {
             //print(hit.collider.gameObject.name);
 
@@ -546,7 +573,7 @@ public class SteeringBehavior : MonoBehaviour {
 
                 //if it is too close, we need a acceleration greater than 
                 //maxAcceleration to decrease the speed greatly
-                if (hit.distance < 2.25f)
+                if (hit.distance < 1.5f)
                 {
                     float multipler = 1f / hit.distance;
                     result.linear *= multipler;
@@ -555,9 +582,9 @@ public class SteeringBehavior : MonoBehaviour {
                     //in order to avoid the bounce effect which could happen if the player is 
                     //too close to the obstacle
 
-                    if (result.linear.magnitude > 20.0f * maxAcceleration)
+                    if (result.linear.magnitude > 9.0f * maxAcceleration)
                     {
-                        result.linear = result.linear.normalized * 20.0f * maxAcceleration;
+                        result.linear = result.linear.normalized * 9.0f * maxAcceleration;
                     }
 
                 }
@@ -565,25 +592,63 @@ public class SteeringBehavior : MonoBehaviour {
                 //then we do the turing, we will check 45, 90, ... , 180
                 //if all these failed, we will use targetPos
                 float ang = 0f;
-                while (ang < 360f)
+                while (ang < 180f)
                 {
-                    //check collision using simple ray cast
-                    bool cannotTurn = Physics.Raycast(agent.position, Quaternion.Euler(0.0f, agent.rotation + ang, 0.0f) * agent.transform.forward, out hit2, raycastDistance);
+                    //check collision using sphere ray cast to left and right
+                    bool cannotTurnLeft = Physics.SphereCast(agent.position,0.35f ,Quaternion.Euler(0.0f, agent.rotation + ang, 0.0f) * agent.transform.forward, out hitLeft, raycastDistance);
+                    bool cannotTurnRight = Physics.SphereCast(agent.position,0.35f ,Quaternion.Euler(0.0f, agent.rotation - ang, 0.0f) * agent.transform.forward, out hitRight, raycastDistance);
                     //check the tag of collision object, the only situation
                     //cannot turn is find a obstacle tagged gameobject
-                    if (cannotTurn == true)
+                    if (cannotTurnLeft == true || cannotTurnRight == true)
                     {
-                        if (hit2.collider.gameObject.tag != "Obstacle")
+                        if (hitLeft.collider != null && hitLeft.collider.gameObject.tag != "Obstacle" && cannotTurnLeft == true)
+                        {
+                            cannotTurnLeft = false;
+                        }
+                        if (hitRight.collider != null && hitRight.collider.gameObject.tag != "Obstacle" && cannotTurnRight == true)
+                        {
+                            cannotTurnRight = false;
+                        }
+                    }
+
+                    bool cannotTurn = true;
+                    float finalAng = 0;
+                    
+                    //determing which direction we should seek and face
+                    if(cannotTurnLeft == false && cannotTurnRight == false)
+                    {
+                        float rnd = Random.Range(-1.0f, 1.0f);
+                        if(rnd < 0)
                         {
                             cannotTurn = false;
+                            finalAng = ang;
                         }
+                        else
+                        {
+                            cannotTurn = false;
+                            finalAng = -ang;
+                        }
+                    }
+                    else if(cannotTurnLeft == false)
+                    {
+                        cannotTurn = false;
+                        finalAng = ang;
+                    }
+                    else if(cannotTurnRight = false)
+                    {
+                        cannotTurn = false;
+                        finalAng = -ang;
+                    }
+                    else
+                    {
+                        cannotTurn = true;
                     }
 
                     //if there is no obstacle, just turn the gameObject
                     if (cannotTurn == false)
                     {
                         //turn 45 degrees every time in clockwise
-                        targetPos = agent.position + Quaternion.Euler(0.0f, agent.rotation + ang, 0.0f) * agent.transform.forward * raycastDistance;
+                        targetPos = agent.position + Quaternion.Euler(0.0f, agent.rotation + finalAng, 0.0f) * agent.transform.forward * raycastDistance;
 
                         //if the target is too close to the obstacle, turn faster
                         if (hit.distance < 0.45f)
@@ -597,7 +662,7 @@ public class SteeringBehavior : MonoBehaviour {
                         result.needAvoidance = true;
                         return result;
                     }
-                    ang += 45f;
+                    ang += 5f;
 
                     //make sure turn back is not selected since
                     //hit.normal could be looking back
@@ -741,9 +806,17 @@ public class SteeringBehavior : MonoBehaviour {
 
     public wanderSteering ConeCheck()
     {
+        List<GameObject> allNPCs;
         //get a list for all NPCs
-        List<GameObject>  allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
-
+        if(GameObject.Find("PhaseManager").GetComponent<FieldMapManager>() != null)
+        {
+            allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
+        }
+        else
+        {
+            allNPCs = GameObject.Find("PhaseManager").GetComponent<ForestMapManager>().AllNPCs();
+        }
+        
 
         wanderSteering emptyRet;
         emptyRet.linear = Vector3.zero;
@@ -776,6 +849,113 @@ public class SteeringBehavior : MonoBehaviour {
         return emptyRet;
 
     }
+
+    public Vector3 FlockCollisionDetectAndAvoid()
+    {
+        List<GameObject> allNPCs;
+        //error checking: if not find the script attached on Phase Manager
+        if (GameObject.Find("PhaseManager") == null)
+        {
+            return new Vector3(0f, 0f, 0f);
+        }
+        else if (GameObject.Find("PhaseManager").GetComponent<FieldMapManager>() == null && 
+            GameObject.Find("PhaseManager").GetComponent<ForestMapManager>() == null)
+        {
+            return new Vector3(0f, 0f, 0f);
+        }
+
+        //get a list for all NPCs
+        
+        if(GameObject.Find("PhaseManager").GetComponent<FieldMapManager>() != null)
+        {
+            allNPCs = GameObject.Find("PhaseManager").GetComponent<FieldMapManager>().AllNPCs();
+        }
+        else
+        {
+            allNPCs = GameObject.Find("PhaseManager").GetComponent<ForestMapManager>().AllNPCs();
+
+        }
+
+
+        //if there is only one NPC
+        if (allNPCs.Count <= 1)
+        {
+            return new Vector3(0f, 0f, 0f);
+        }
+
+        //if there are multiple NPCs
+        GameObject nearestNPC = null;
+        float shortestTime = 9999999f;
+        float firstMinSeperation = 0;
+        float firstDistance = 0;
+        Vector3 firstRelativePos = new Vector3(0f, 0f, 0f);
+        Vector3 firstRelativeVel = new Vector3(0f, 0f, 0f);
+        foreach (GameObject NPC in allNPCs)
+        {
+            //we should not check self
+            if (NPC != this && NPC.tag == this.tag)
+            {
+                //calculate the time to collision
+                NPCController nc = NPC.GetComponent<NPCController>();
+                Vector3 relativePos = nc.position - agent.position;
+                Vector3 relativeVel = nc.velocity - agent.velocity;
+                float relativeSpeed = relativeVel.magnitude;
+                float timeToCollision = -Vector3.Dot(relativePos, relativeVel) / (relativeSpeed * relativeSpeed);
+
+                //check collision
+                float distance = relativePos.magnitude;
+                float minSeperation = distance - relativeSpeed * shortestTime;
+
+
+                //check if is already in collision
+                if (distance < 2 * targetRadiusL)
+                {
+                    return (relativePos.normalized * (-maxAcceleration) * 3.0f);
+                }
+
+                if (minSeperation > 2 * targetRadiusL)
+                {
+                    continue;
+                }
+
+                //check if the collisiontime is the shortest
+                if (timeToCollision > 0 && timeToCollision < shortestTime)
+                {
+                    shortestTime = timeToCollision;
+                    nearestNPC = NPC;
+                    firstDistance = distance;
+                    firstMinSeperation = minSeperation;
+                    firstRelativePos = relativePos;
+                    firstRelativeVel = relativeVel;
+                }
+            }
+        }
+
+        //if we need to do the avoidance   
+        if (nearestNPC != null)
+        {
+            NPCController nc = nearestNPC.GetComponent<NPCController>();
+            Vector3 relativePos;
+
+            //if we are exactly going to collide or already collided
+            if (firstMinSeperation <= 0 || (nc.position - agent.position).magnitude < 2 * targetRadiusL)
+            {
+                relativePos = nc.position - agent.position;
+            }
+            //otherwise we calculate the future relative position
+            else
+            {
+                relativePos = firstRelativePos + firstRelativeVel * shortestTime;
+            }
+
+            //do the avoidance
+            relativePos = relativePos.normalized;
+            return (relativePos * maxAcceleration * 1.2f);
+        }
+
+        return new Vector3(0f, 0f, 0f);
+    }
+
 
     private Vector3 Cohesion()
     {
@@ -850,7 +1030,7 @@ public class SteeringBehavior : MonoBehaviour {
     public wanderSteering Flocking()
     {
         wanderSteering result = new wanderSteering();
-        Vector3 seperation = CollisionDetectAndAvoid();
+        Vector3 seperation = FlockCollisionDetectAndAvoid();
         Vector3 cohesion = Cohesion();
         wanderSteering align = AlignCloseBy();
 
